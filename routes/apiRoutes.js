@@ -13,13 +13,22 @@ module.exports = function (app) {
     // I will create a post for our API
     app.post("/api/notes", function (req, res) {
         req.body.id = id++;
-        console.log(req.body)
+        //console.log(req.body)
         database.push(req.body)
         fs.writeFile("./db/db.json", JSON.stringify(database), function (err) {
             if (err) throw err
         })
         res.json(database)
 
+    })
+    // I will be able to update the notes as needed
+    app.patch('/api/notes/:id', function (req, res) {
+        if (req.body._id && req.body._id != req.params.id) return res.status(400).json({ error: 'ID in the body is not matching ID in the URL' })
+        delete req.body._id
+        req.collection.updateById(req.params.id, { $set: req.body }, function (e, results) {
+            console.log('boo', e, results)
+            res.json(results)
+        })
     })
     // I will delete all the notes
     app.delete("/api/notes/:id", function (req, res) {
